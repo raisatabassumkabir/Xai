@@ -84,6 +84,7 @@ export const InsightFlowSection = () => {
     // Pin section during scroll progression
     const tl = gsap.timeline({
       scrollTrigger: {
+        id: "insight-flow-trigger",
         trigger: sectionRef.current,
         start: "top top",
         end: `+=${totalStages * 100}%`,
@@ -126,6 +127,27 @@ export const InsightFlowSection = () => {
     });
   }, { scope: sectionRef });
 
+  const selectStage = (index: number) => {
+    setActiveStageIndex(index);
+    
+    // Animate content cards directly for instantaneous response
+    contentRefs.current.forEach((el, idx) => {
+      if (!el) return;
+      if (idx === index) {
+        gsap.to(el, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "power2.out" });
+      } else {
+        gsap.to(el, { opacity: 0, y: idx < index ? -50 : 50, scale: 0.95, duration: 0.4, ease: "power2.in" });
+      }
+    });
+
+    // Scroll window smoothly to match ScrollTrigger progress
+    const st = ScrollTrigger.getById("insight-flow-trigger");
+    if (st) {
+      const targetScroll = st.start + (index / (stages.length - 1)) * (st.end - st.start);
+      window.scrollTo({ top: targetScroll, behavior: "smooth" });
+    }
+  };
+
   return (
     <Section id="insight-flow" ref={sectionRef} className="h-screen flex items-center bg-background p-0 relative overflow-hidden">
       
@@ -148,27 +170,30 @@ export const InsightFlowSection = () => {
           </p>
         </div>
 
-        {/* Stage Progress Bar / Tabs */}
+        {/* Stage Progress Bar / Clickable Tabs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10 max-w-4xl mx-auto w-full">
           {stages.map((stage, idx) => {
             const isActive = idx === activeStageIndex;
             return (
-              <div
+              <button
                 key={stage.id}
-                className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${
+                onClick={() => selectStage(idx)}
+                className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 cursor-pointer ${
                   isActive
-                    ? "bg-white/10 border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
-                    : "bg-white/5 border-white/5 opacity-50"
+                    ? "bg-white/10 border-indigo-500/60 shadow-[0_0_25px_rgba(99,102,241,0.35)] scale-[1.02]"
+                    : "bg-white/5 border-white/5 opacity-60 hover:opacity-100 hover:border-white/20 hover:bg-white/[0.07]"
                 }`}
               >
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${stage.accent} flex items-center justify-center font-mono text-xs font-bold text-white shrink-0`}>
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${stage.accent} flex items-center justify-center font-mono text-xs font-bold text-white shrink-0 shadow-md`}>
                   {stage.step}
                 </div>
                 <div className="text-left hidden sm:block">
-                  <div className="text-xs font-bold text-white leading-tight">{stage.title}</div>
+                  <div className={`text-xs font-bold leading-tight transition-colors ${isActive ? "text-white" : "text-slate-300"}`}>
+                    {stage.title}
+                  </div>
                   <div className="text-[10px] text-slate-400">{stage.subtitle}</div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -215,7 +240,7 @@ export const InsightFlowSection = () => {
                   ref={(el) => {
                     contentRefs.current[i] = el;
                   }}
-                  className="absolute w-full max-w-xl p-8 rounded-2xl bg-[#0b0c14]/90 border border-white/10 backdrop-blur-xl shadow-2xl flex flex-col items-center text-center"
+                  className="absolute w-full max-w-xl p-8 rounded-2xl bg-[#0b0c14]/90 border border-white/10 backdrop-blur-xl shadow-2xl flex flex-col items-center text-center transition-all"
                   style={{ opacity: i === 0 ? 1 : 0 }}
                 >
                   {/* Glowing Icon Header */}
