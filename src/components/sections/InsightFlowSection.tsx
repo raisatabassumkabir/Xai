@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { motion } from "framer-motion";
 import { Section, Container } from "@/components/layout";
 import { Database, Network, LineChart, Bot, Sparkles } from "lucide-react";
 
@@ -24,7 +25,8 @@ const stages = [
       { label: "Throughput", value: "1.4 TB/s" },
       { label: "Normalization", value: "99.99%" },
     ],
-    accent: "from-indigo-500 to-blue-600",
+    accent: "from-indigo-500 via-blue-500 to-indigo-600",
+    borderGlow: "rgba(99, 102, 241, 0.4)",
   },
   {
     id: "stage-2",
@@ -38,7 +40,8 @@ const stages = [
       { label: "Schema Auto-Detect", value: "Instant" },
       { label: "Clustering Accuracy", value: "99.8%" },
     ],
-    accent: "from-blue-500 to-purple-600",
+    accent: "from-blue-500 via-purple-500 to-indigo-600",
+    borderGlow: "rgba(168, 85, 247, 0.4)",
   },
   {
     id: "stage-3",
@@ -52,7 +55,8 @@ const stages = [
       { label: "Confidence Score", value: "98.4%" },
       { label: "Signal Noise Ratio", value: "+42dB" },
     ],
-    accent: "from-purple-500 to-emerald-500",
+    accent: "from-purple-500 via-pink-500 to-emerald-500",
+    borderGlow: "rgba(236, 72, 153, 0.4)",
   },
   {
     id: "stage-4",
@@ -66,7 +70,8 @@ const stages = [
       { label: "Execution Reliability", value: "100%" },
       { label: "Actions Triggered", value: "84.2K/m" },
     ],
-    accent: "from-emerald-400 to-teal-500",
+    accent: "from-emerald-400 via-teal-500 to-cyan-500",
+    borderGlow: "rgba(16, 185, 129, 0.4)",
   },
 ];
 
@@ -170,24 +175,33 @@ export const InsightFlowSection = () => {
           </p>
         </div>
 
-        {/* Stage Progress Bar / Clickable Tabs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10 max-w-4xl mx-auto w-full">
+        {/* Stage Progress Bar / Clickable Tabs with Sliding Framer Motion Highlight */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10 max-w-4xl mx-auto w-full relative">
           {stages.map((stage, idx) => {
             const isActive = idx === activeStageIndex;
             return (
               <button
                 key={stage.id}
                 onClick={() => selectStage(idx)}
-                className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 cursor-pointer ${
+                className={`relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 cursor-pointer overflow-hidden ${
                   isActive
-                    ? "bg-white/10 border-indigo-500/60 shadow-[0_0_25px_rgba(99,102,241,0.35)] scale-[1.02]"
+                    ? "bg-white/10 border-indigo-500/70 shadow-[0_0_30px_rgba(99,102,241,0.35)] scale-[1.02]"
                     : "bg-white/5 border-white/5 opacity-60 hover:opacity-100 hover:border-white/20 hover:bg-white/[0.07]"
                 }`}
               >
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${stage.accent} flex items-center justify-center font-mono text-xs font-bold text-white shrink-0 shadow-md`}>
+                {/* Sliding Framer Motion Active Border & Fill */}
+                {isActive && (
+                  <motion.div
+                    layoutId="active-stage-highlight"
+                    className={`absolute inset-0 rounded-xl border-2 border-indigo-400 bg-gradient-to-r ${stage.accent} opacity-15 pointer-events-none`}
+                    transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                  />
+                )}
+
+                <div className={`relative z-10 w-8 h-8 rounded-lg bg-gradient-to-br ${stage.accent} flex items-center justify-center font-mono text-xs font-bold text-white shrink-0 shadow-md`}>
                   {stage.step}
                 </div>
-                <div className="text-left hidden sm:block">
+                <div className="relative z-10 text-left hidden sm:block">
                   <div className={`text-xs font-bold leading-tight transition-colors ${isActive ? "text-white" : "text-slate-300"}`}>
                     {stage.title}
                   </div>
@@ -230,48 +244,56 @@ export const InsightFlowSection = () => {
             </svg>
           </div>
 
-          {/* Stage Cards */}
+          {/* Stage Cards with Animated Glowing Border Accent */}
           <div className="relative w-full h-full flex items-center justify-center z-10">
             {stages.map((stage, i) => {
               const Icon = stage.icon;
+              const isSelected = i === activeStageIndex;
+
               return (
                 <div
                   key={stage.id}
                   ref={(el) => {
                     contentRefs.current[i] = el;
                   }}
-                  className="absolute w-full max-w-xl p-8 rounded-2xl bg-[#0b0c14]/90 border border-white/10 backdrop-blur-xl shadow-2xl flex flex-col items-center text-center transition-all"
-                  style={{ opacity: i === 0 ? 1 : 0 }}
+                  className={`absolute w-full max-w-xl p-[1.5px] rounded-2xl bg-gradient-to-b ${stage.accent} backdrop-blur-xl shadow-2xl transition-all duration-500`}
+                  style={{ 
+                    opacity: i === 0 ? 1 : 0,
+                    boxShadow: isSelected ? `0 0 50px ${stage.borderGlow}` : "none"
+                  }}
                 >
-                  {/* Glowing Icon Header */}
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${stage.accent} p-0.5 mb-6 shadow-[0_0_30px_rgba(99,102,241,0.3)]`}>
-                    <div className="w-full h-full bg-[#0b0c14] rounded-[14px] flex items-center justify-center">
-                      <Icon className="w-8 h-8 text-white" />
-                    </div>
-                  </div>
-
-                  <span className="text-xs font-mono font-bold tracking-widest text-indigo-400 uppercase mb-1">
-                    Stage {stage.step} — {stage.subtitle}
-                  </span>
-                  
-                  <h3 className="text-3xl font-extrabold text-white mb-3">
-                    {stage.title}
-                  </h3>
-                  
-                  <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
-                    {stage.description}
-                  </p>
-
-                  {/* Telemetry Metrics Grid */}
-                  <div className="grid grid-cols-3 gap-3 w-full pt-4 border-t border-white/10">
-                    {stage.metrics.map((m, mIdx) => (
-                      <div key={mIdx} className="bg-white/5 rounded-xl p-2.5 text-center border border-white/5">
-                        <div className="text-xs font-bold text-white">{m.value}</div>
-                        <div className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">{m.label}</div>
+                  <div className="w-full h-full p-8 rounded-[15px] bg-[#0b0c14]/95 flex flex-col items-center text-center">
+                    
+                    {/* Glowing Icon Header */}
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${stage.accent} p-0.5 mb-6 shadow-[0_0_30px_rgba(99,102,241,0.35)]`}>
+                      <div className="w-full h-full bg-[#0b0c14] rounded-[14px] flex items-center justify-center">
+                        <Icon className="w-8 h-8 text-white" />
                       </div>
-                    ))}
-                  </div>
+                    </div>
 
+                    <span className="text-xs font-mono font-bold tracking-widest text-indigo-400 uppercase mb-1">
+                      Stage {stage.step} — {stage.subtitle}
+                    </span>
+                    
+                    <h3 className="text-3xl font-extrabold text-white mb-3">
+                      {stage.title}
+                    </h3>
+                    
+                    <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
+                      {stage.description}
+                    </p>
+
+                    {/* Telemetry Metrics Grid */}
+                    <div className="grid grid-cols-3 gap-3 w-full pt-4 border-t border-white/10">
+                      {stage.metrics.map((m, mIdx) => (
+                        <div key={mIdx} className="bg-white/5 rounded-xl p-2.5 text-center border border-white/5">
+                          <div className="text-xs font-bold text-white">{m.value}</div>
+                          <div className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">{m.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                  </div>
                 </div>
               );
             })}
