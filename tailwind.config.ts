@@ -11,7 +11,20 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        glass: {
+          border: "rgba(255, 255, 255, 0.1)",
+          bg: "rgba(255, 255, 255, 0.05)",
+          highlight: "rgba(255, 255, 255, 0.15)",
+        }
       },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic":
+          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      },
+      backdropBlur: {
+        xl: '24px',
+      }
     },
   },
   plugins: [],
